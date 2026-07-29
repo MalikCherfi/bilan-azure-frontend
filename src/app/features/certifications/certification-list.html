@@ -1,0 +1,36 @@
+<header class="page-header">
+  <h1>{{ 'certifications.title' | translate }}</h1>
+  <p class="page-subtitle">{{ 'certifications.subtitle' | translate }}</p>
+</header>
+
+@if (loading()) {
+  <div class="state-container">
+    <mat-spinner diameter="40" />
+  </div>
+} @else if (loadError()) {
+  <p class="error">{{ 'common.loadError' | translate }}</p>
+} @else {
+  <div class="card-grid">
+    @for (certification of certifications(); track certification.id) {
+      <a class="cert-card" [routerLink]="['/certifications', certification.id]">
+        <div class="cert-icon">
+          <mat-icon>cloud</mat-icon>
+        </div>
+        <div class="cert-body">
+          <span class="cert-code">{{ certification.code }}</span>
+          <h2 class="cert-title">{{ certification.title }}</h2>
+          @if (certification.description) {
+            <p class="cert-description">{{ certification.description }}</p>
+          }
+          <p class="module-count">
+            {{
+              (certification.moduleCount > 1 ? 'certifications.moduleCountPlural' : 'certifications.moduleCount')
+                | translate: { count: certification.moduleCount }
+            }}
+          </p>
+        </div>
+        <mat-icon class="chevron">chevron_right</mat-icon>
+      </a>
+    }
+  </div>
+}

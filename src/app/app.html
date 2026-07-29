@@ -1,0 +1,13 @@
+<mat-toolbar color="primary" class="toolbar">
+  <a routerLink="/" class="toolbar-title">
+    <mat-icon>school</mat-icon>
+    {{ 'app.title' | translate }}
+  </a>
+  <span class="spacer"></span>
+  <button mat-button (click)="switchLang('fr')">FR</button>
+  <button mat-button (click)="switchLang('en')">EN</button>
+</mat-toolbar>
+
+<main class="content">
+  <router-outlet />
+</main>

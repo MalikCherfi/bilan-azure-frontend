@@ -1,0 +1,105 @@
+<a routerLink="/" class="back-link">
+  <mat-icon>arrow_back</mat-icon>
+  {{ 'modules.back' | translate }}
+</a>
+
+<h1>{{ 'modules.title' | translate }}</h1>
+
+<div class="exam-card">
+  <div class="exam-icon">
+    <mat-icon>bolt</mat-icon>
+  </div>
+  <div class="exam-body">
+    <h2>{{ 'modules.examMode' | translate }}</h2>
+    <p>{{ 'modules.examModeHint' | translate }}</p>
+    @if (startError()) {
+      <p class="error">{{ 'common.loadError' | translate }}</p>
+    }
+  </div>
+  <button
+    mat-flat-button
+    color="primary"
+    class="exam-cta"
+    [disabled]="starting()"
+    (click)="startExam()"
+  >
+    {{ 'modules.start' | translate }}
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="state-container">
+    <mat-spinner diameter="40" />
+  </div>
+} @else if (loadError()) {
+  <p class="error">{{ 'common.loadError' | translate }}</p>
+} @else {
+  @if (mockExamModules().length > 0) {
+    <h2 class="section-title">{{ 'modules.officialExamsTitle' | translate }}</h2>
+    <p class="section-hint">{{ 'modules.officialExamsHint' | translate }}</p>
+    <div class="card-grid">
+      @for (module of mockExamModules(); track module.id) {
+        <div class="module-card mock-exam-card">
+          <div class="module-icon mock-exam-icon">
+            <mat-icon>assignment</mat-icon>
+          </div>
+          <div class="module-body">
+            <h3 class="module-title">{{ module.title }}</h3>
+            @if (module.description) {
+              <p class="module-description">{{ module.description }}</p>
+            }
+            <p class="question-count">
+              {{
+                (module.questionCount > 1 ? 'modules.questionCountPlural' : 'modules.questionCount')
+                  | translate: { count: module.questionCount }
+              }}
+            </p>
+          </div>
+          <button
+            mat-stroked-button
+            color="primary"
+            class="module-cta"
+            [disabled]="starting() || module.questionCount === 0"
+            (click)="startModuleQuiz(module.id)"
+          >
+            {{ 'modules.start' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @if (contentModules().length > 0) {
+    <h2 class="section-title">{{ 'modules.contentTitle' | translate }}</h2>
+    <div class="card-grid">
+      @for (module of contentModules(); track module.id) {
+        <div class="module-card">
+          <div class="module-icon">
+            <mat-icon>layers</mat-icon>
+          </div>
+          <div class="module-body">
+            <h3 class="module-title">{{ module.title }}</h3>
+            @if (module.description) {
+              <p class="module-description">{{ module.description }}</p>
+            }
+            <p class="question-count">
+              {{
+                (module.questionCount > 1 ? 'modules.questionCountPlural' : 'modules.questionCount')
+                  | translate: { count: module.questionCount }
+              }}
+            </p>
+          </div>
+          <button
+            mat-stroked-button
+            color="primary"
+            class="module-cta"
+            [disabled]="starting() || module.questionCount === 0"
+            (click)="startModuleQuiz(module.id)"
+          >
+            {{ 'modules.start' | translate }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+}

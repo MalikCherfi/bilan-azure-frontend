@@ -1,0 +1,35 @@
+@if (loading()) {
+  <div class="state-container">
+    <mat-spinner diameter="40" />
+  </div>
+} @else if (result(); as r) {
+  <h1 class="page-title">{{ 'results.title' | translate }}</h1>
+
+  <div class="score-panel">
+    <div class="score-ring" [class]="scoreBand()" [style.--score-deg]="scoreRounded() * 3.6 + 'deg'">
+      <div class="score-ring-inner">
+        <span class="score-value">{{ scoreRounded() }}%</span>
+      </div>
+    </div>
+    <p class="score-summary">
+      {{ 'results.score' | translate: { correct: r.correctCount, total: r.totalQuestions, percentage: scoreRounded() } }}
+    </p>
+  </div>
+
+  <ul class="result-list">
+    @for (detail of r.details; track detail.questionId) {
+      <li class="result-item" [class.correct]="detail.correct" [class.incorrect]="!detail.correct">
+        <mat-icon>{{ detail.correct ? 'check_circle' : 'cancel' }}</mat-icon>
+        <span>{{ detail.statement }}</span>
+      </li>
+    }
+  </ul>
+
+  <div class="actions">
+    <a mat-flat-button color="primary" class="action-btn" routerLink="/">
+      {{ 'results.backHome' | translate }}
+    </a>
+  </div>
+} @else if (loadError()) {
+  <p class="error">{{ 'common.loadError' | translate }}</p>
+}

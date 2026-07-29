@@ -1,0 +1,119 @@
+.quiz-header {
+  margin-bottom: 8px;
+}
+
+.quiz-header mat-progress-bar {
+  border-radius: 999px;
+  overflow: hidden;
+  height: 8px;
+}
+
+.progress-label {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+  font-weight: 500;
+}
+
+.statement {
+  margin: 16px 0 20px;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.state-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 24px;
+}
+
+.option {
+  display: block;
+  width: 100%;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container-low);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+
+  &.selected {
+    border-color: var(--mat-sys-primary);
+    background: var(--mat-sys-primary-container);
+  }
+
+  &.correct {
+    border-color: #1e8e3e;
+    background: #e6f4ea;
+  }
+
+  &.incorrect {
+    border-color: #d93025;
+    background: #fdeded;
+  }
+
+  ::ng-deep .mdc-form-field {
+    width: 100%;
+    padding: 12px 0;
+  }
+
+  ::ng-deep label {
+    width: 100%;
+    cursor: pointer;
+  }
+}
+
+.feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0 0 20px;
+
+  &.correct {
+    background-color: #e6f4ea;
+    color: #1e4620;
+
+    mat-icon {
+      color: #1e8e3e;
+    }
+  }
+
+  &.incorrect {
+    background-color: #fdeded;
+    color: #611a15;
+
+    mat-icon {
+      color: #d93025;
+    }
+  }
+}
+
+.feedback-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.explanation {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+
+.action-btn {
+  width: 100%;
+  height: 48px;
+  font-size: 1rem;
+}
+
+.error {
+  color: #b3261e;
+}

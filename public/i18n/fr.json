@@ -1,0 +1,40 @@
+{
+  "app": {
+    "title": "Révisions certifications Microsoft"
+  },
+  "common": {
+    "loadError": "Une erreur est survenue. Vérifiez votre connexion et réessayez."
+  },
+  "certifications": {
+    "title": "Choisissez une certification",
+    "subtitle": "Sélectionnez le programme que vous souhaitez réviser",
+    "moduleCount": "{{count}} module",
+    "moduleCountPlural": "{{count}} modules"
+  },
+  "modules": {
+    "title": "Modules",
+    "back": "Retour",
+    "examMode": "Entraînement aléatoire",
+    "examModeHint": "Questions tirées au hasard parmi tous les modules de cours",
+    "officialExamsTitle": "Examens blancs officiels",
+    "officialExamsHint": "Examens complets à faire en une seule fois, indépendamment les uns des autres.",
+    "contentTitle": "Modules",
+    "questionCount": "{{count}} question",
+    "questionCountPlural": "{{count}} questions",
+    "start": "Commencer"
+  },
+  "quiz": {
+    "question": "Question {{current}} / {{total}}",
+    "submit": "Valider",
+    "next": "Suivant",
+    "seeResults": "Voir les résultats",
+    "correct": "Bonne réponse !",
+    "incorrect": "Mauvaise réponse"
+  },
+  "results": {
+    "title": "Résultats",
+    "score": "Score : {{correct}} / {{total}} ({{percentage}}%)",
+    "restart": "Recommencer",
+    "backHome": "Retour à l'accueil"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "app": {
+    "title": "Microsoft Certifications Revision"
+  },
+  "common": {
+    "loadError": "Something went wrong. Check your connection and try again."
+  },
+  "certifications": {
+    "title": "Choose a certification",
+    "subtitle": "Select the program you want to revise",
+    "moduleCount": "{{count}} module",
+    "moduleCountPlural": "{{count}} modules"
+  },
+  "modules": {
+    "title": "Modules",
+    "back": "Back",
+    "examMode": "Random practice",
+    "examModeHint": "Questions randomly drawn from all course modules",
+    "officialExamsTitle": "Official mock exams",
+    "officialExamsHint": "Complete exams to take in one sitting, independently from each other.",
+    "contentTitle": "Modules",
+    "questionCount": "{{count}} question",
+    "questionCountPlural": "{{count}} questions",
+    "start": "Start"
+  },
+  "quiz": {
+    "question": "Question {{current}} / {{total}}",
+    "submit": "Submit",
+    "next": "Next",
+    "seeResults": "See results",
+    "correct": "Correct answer!",
+    "incorrect": "Incorrect answer"
+  },
+  "results": {
+    "title": "Results",
+    "score": "Score: {{correct}} / {{total}} ({{percentage}}%)",
+    "restart": "Restart",
+    "backHome": "Back home"
+  }
+}

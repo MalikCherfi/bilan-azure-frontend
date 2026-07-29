@@ -1,0 +1,81 @@
+@if (currentQuestion(); as question) {
+  <div class="quiz-header">
+    <mat-progress-bar mode="determinate" [value]="progressPercent()" />
+    <p class="progress-label">
+      {{ 'quiz.question' | translate: { current: currentIndexDisplay(), total: totalQuestions() } }}
+    </p>
+  </div>
+
+  <h2 class="statement">{{ question.statement }}</h2>
+
+  @if (question.type === 'MULTIPLE_CHOICE') {
+    <div class="options">
+      @for (option of question.options; track option.optionId) {
+        <mat-checkbox
+          class="option"
+          [class.selected]="isSelected(option.optionId) && lastResult() === null"
+          [class.correct]="isCorrectOption(option.optionId)"
+          [class.incorrect]="isWrongSelection(option.optionId)"
+          [checked]="isSelected(option.optionId)"
+          [disabled]="lastResult() !== null"
+          (change)="toggleOption(option.optionId, true)"
+        >
+          {{ option.label }}
+        </mat-checkbox>
+      }
+    </div>
+  } @else {
+    <mat-radio-group
+      class="options"
+      [disabled]="lastResult() !== null"
+      [value]="selectedOptionIds()[0] ?? null"
+      (change)="toggleOption($event.value, false)"
+    >
+      @for (option of question.options; track option.optionId) {
+        <mat-radio-button
+          class="option"
+          [class.selected]="isSelected(option.optionId) && lastResult() === null"
+          [class.correct]="isCorrectOption(option.optionId)"
+          [class.incorrect]="isWrongSelection(option.optionId)"
+          [value]="option.optionId"
+        >
+          {{ option.label }}
+        </mat-radio-button>
+      }
+    </mat-radio-group>
+  }
+
+  @if (lastResult(); as result) {
+    <div class="feedback" [class.correct]="result.correct" [class.incorrect]="!result.correct">
+      <mat-icon>{{ result.correct ? 'check_circle' : 'cancel' }}</mat-icon>
+      <div>
+        <p class="feedback-title">{{ (result.correct ? 'quiz.correct' : 'quiz.incorrect') | translate }}</p>
+        @if (result.explanation) {
+          <p class="explanation">{{ result.explanation }}</p>
+        }
+      </div>
+    </div>
+    <button mat-flat-button color="primary" class="action-btn" (click)="next()">
+      {{ (isLastQuestion() ? 'quiz.seeResults' : 'quiz.next') | translate }}
+    </button>
+  } @else {
+    <button
+      mat-flat-button
+      color="primary"
+      class="action-btn"
+      [disabled]="selectedOptionIds().length === 0 || submitting()"
+      (click)="submit()"
+    >
+      {{ 'quiz.submit' | translate }}
+    </button>
+    @if (submitError()) {
+      <p class="error">{{ 'common.loadError' | translate }}</p>
+    }
+  }
+} @else if (loading()) {
+  <div class="state-container">
+    <mat-spinner diameter="40" />
+  </div>
+} @else if (loadError()) {
+  <p class="error">{{ 'common.loadError' | translate }}</p>
+}
