@@ -51,15 +51,6 @@ jobs:
       - name: "Tests avec couverture"
         run: npm test
 
-      - name: Générer le rapport de couverture
-        run: npm test -- --coverage --coverageReporters=html
-
-      - name: Upload du rapport
-        uses: actions/upload-artifact@v7
-        with:
-          name: rapport-couverture-node
-          path: ressources-node/coverage/
-
   test-matrix:
     runs-on: ubuntu-latest
     strategy:
