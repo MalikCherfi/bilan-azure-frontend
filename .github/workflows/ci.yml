@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: "Installer les dépendances"
+        run: npm ci
+
+      - name: "Lint avec ESLint"
+        run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        with:
+          path: ressources-node/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: "Installer les dépendances"
+        run: npm ci
+
+      - name: "Tests avec couverture"
+        run: npm test
+
+      - name: Générer le rapport de couverture
+        run: npm test -- --coverage --coverageReporters=html
+
+      - name: Upload du rapport
+        uses: actions/upload-artifact@v7
+        with:
+          name: rapport-couverture-node
+          path: ressources-node/coverage/
+
+  test-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ["18", "20", "22"]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Tests Node ${{ matrix.node-version }}
+        run: npm test
