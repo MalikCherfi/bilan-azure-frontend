@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "26"
 
       - name: "Installer les dépendances"
         run: npm ci
@@ -43,7 +43,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "26"
 
       - name: "Installer les dépendances"
         run: npm ci
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ["18", "20", "22"]
+        node-version: ["22", "24", "26"]
       fail-fast: false
 
     steps:
