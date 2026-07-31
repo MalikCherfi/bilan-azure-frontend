@@ -1,0 +1,5 @@
+namespace: malik-cherfi
+
+resources:
+  - deployment.yaml
+  - service.yaml
