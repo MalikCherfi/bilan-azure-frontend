@@ -29,21 +29,21 @@ SUB_ID=$(az account show --query id -o tsv)
 TENANT_ID=$(az account show --query tenantId -o tsv)
 
 # Create federated credentials for main
-az identity federated-credential create \
+az identity federated-credential update \
   --name "github-${GITHUB_REPO}-${BRANCH}-main" \
   --identity-name "$IDENTITY_NAME" \
   --resource-group "$RG" \
   --issuer "https://token.actions.githubusercontent.com" \
-  --subject "repo:MalikCherfi@90403152/bilan-azure-frontend@1317064255:ref:refs/heads/main" \
+  --subject "repo:MalikCherfi@90403152/bilan-azure-frontend@1317063503:ref:refs/heads/main" \
   --audiences "api://AzureADTokenExchange"
 
 # Create federated credentials for pull requests
-az identity federated-credential create \
+az identity federated-credential update \
   --name "github-${GITHUB_REPO}-${BRANCH}-pull-requests" \
   --identity-name "$IDENTITY_NAME" \
   --resource-group "$RG" \
   --issuer "https://token.actions.githubusercontent.com" \
-  --subject "repo:MalikCherfi@90403152/bilan-azure-frontend@1317064255:pull_request" \
+  --subject "repo:MalikCherfi@90403152/bilan-azure-frontend@1317063503:pull_request" \
   --audiences "api://AzureADTokenExchange"
 
 echo "AZURE_CLIENT_ID=$CLIENT_ID"
