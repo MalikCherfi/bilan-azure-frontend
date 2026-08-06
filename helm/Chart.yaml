@@ -1,6 +1,6 @@
 apiVersion: v2
-name: demo-app-chart
-description: Chart Helm pour la stack microservices (api, books, movies)
+name: front-chart
+description: Chart Helm for the front-end application
 type: application
 version: 1.0.0
-appVersion: "1.14.2"
+appVersion: '1.14.2'
