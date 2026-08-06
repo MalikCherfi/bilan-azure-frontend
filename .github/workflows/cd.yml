@@ -35,11 +35,14 @@ jobs:
                   --query "[?tags.owner=='malik-cherfi'].name" -o tsv)
                   echo "acr_name=$ACR_NAME" >> "$GITHUB_OUTPUT"
 
+            # TODO: replace with real key and URL
             - name: Build and push image to ACR
               run: |
                   az acr build \
                   --image ${{ steps.get-acr.outputs.acr_name }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} \
                   --registry ${{ steps.get-acr.outputs.acr_name }} \
+                  --build-arg API_BASE_URL="http://40.114.181.10/api" \
+                  --build-arg API_KEY="test" \ 
                   -g ${{ env.RESOURCE_GROUP }} .
 
     deploy:
