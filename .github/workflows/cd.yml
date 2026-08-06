@@ -7,7 +7,6 @@ env:
     CONTAINER_NAME: "front"
     RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
     CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
-    KUSTOMIZE_PATH: "k8s/base"
 
 jobs:
     buildImage:
