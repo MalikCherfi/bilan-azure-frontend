@@ -85,7 +85,6 @@ jobs:
                   renderEngine: "helm"
                   helmChart: "./helm"
                   helm-version: "latest"
-                  overrideFiles: './helm/values.yaml'
                   overrides: |
                       acrName:${{ needs.buildImage.outputs.acr_name }}
                       imageTag:${{ github.sha }}
