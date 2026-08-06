@@ -30,7 +30,7 @@ jobs:
               id: get-acr
               run: |
                   ACR_NAME=$(az acr list --resource-group ${{ vars.RESOURCE_GROUP }} \
-                  --query "[?tags.owner=='malik-cherfi' && tags.environment=='bilan' && tags.managed_by=='terraform'].name" -o tsv)
+                  --query "[?tags.owner=='malik-cherfi' && tags.environment=='bilan-tp' && tags.managed_by=='terraform'].name" -o tsv)
                   echo "acr_name=$ACR_NAME" >> "$GITHUB_OUTPUT"
 
             # TODO: replace with real key and URL
