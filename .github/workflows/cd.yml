@@ -5,8 +5,6 @@ on:
 
 env:
     CONTAINER_NAME: "front"
-    RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
-    CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
 
 jobs:
     buildImage:
@@ -31,7 +29,7 @@ jobs:
             - name: Retrieve ACR name from ACR tags
               id: get-acr
               run: |
-                  ACR_NAME=$(az acr list --resource-group ${{ env.RESOURCE_GROUP }} \
+                  ACR_NAME=$(az acr list --resource-group ${{ vars.RESOURCE_GROUP }} \
                   --query "[?tags.owner=='malik-cherfi'].name" -o tsv)
                   echo "acr_name=$ACR_NAME" >> "$GITHUB_OUTPUT"
 
@@ -43,7 +41,7 @@ jobs:
                   --registry ${{ steps.get-acr.outputs.acr_name }} \
                   --build-arg API_BASE_URL="http://40.114.181.10/api" \
                   --build-arg API_KEY="test" \
-                  -g ${{ env.RESOURCE_GROUP }} .
+                  -g ${{ vars.RESOURCE_GROUP }} .
 
     deploy:
         permissions:
@@ -74,8 +72,8 @@ jobs:
             - name: Get K8s context
               uses: azure/aks-set-context@v3
               with:
-                  resource-group: ${{ env.RESOURCE_GROUP }}
-                  cluster-name: ${{ env.CLUSTER_NAME }}
+                  resource-group: ${{ vars.RESOURCE_GROUP_SHARED }}
+                  cluster-name: ${{ vars.CLUSTER_NAME }}
                   admin: "false"
                   use-kubelogin: "true"
 
