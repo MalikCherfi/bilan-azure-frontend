@@ -13,11 +13,11 @@ module or mock exam, accessible from a simple link (no account). Consumes the RE
 
 ## Run locally
 
-Prerequisites: Node 22+, and the backend (`azure-quiz-backend`) running on `http://localhost:8081`.
+Prerequisites: Node 22+, and the backend (`azure-quiz-backend`) running on `http://localhost:8080`.
 
 ```bash
 npm install
-npm start   # http://localhost:4200, targets the API on localhost:8081 (see src/environments/environment.development.ts)
+npm start   # http://localhost:4200, targets the API on localhost:8080 (see src/environments/environment.development.ts)
 ```
 
 ## Tests and quality
