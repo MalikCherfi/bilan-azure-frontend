@@ -94,6 +94,7 @@ jobs:
               uses: Azure/k8s-deploy@v4
               with:
                   action: deploy
+                  namespace: "malik-cherfi"
                   manifests: ${{ steps.bake.outputs.manifestsBundle }}
                   images: |
                       ${{ needs.buildImage.outputs.acr_name }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }}
