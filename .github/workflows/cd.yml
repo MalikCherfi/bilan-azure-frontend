@@ -1,8 +1,6 @@
 name: Build and deploy
 
 on:
-    push:
-        branches: [$default-branch]
     workflow_dispatch:
 
 env:
@@ -79,14 +77,17 @@ jobs:
                   admin: "false"
                   use-kubelogin: "true"
 
-            # Runs Kustomize to create manifest files
-            - name: Bake deployment
+            # Bake Helm Chart vers un manifest bundle unique
+            - name: Bake Manifests with Helm
               uses: azure/k8s-bake@v2
-              with:
-                  renderEngine: "kustomize"
-                  kustomizationPath: ${{ env.KUSTOMIZE_PATH }}
-                  kubectl-version: latest
               id: bake
+              with:
+                  renderEngine: "helm"
+                  helmChart: "./helm"
+                  helm-version: "latest"
+                  overrides: |
+                      acrName:${{ needs.buildImage.outputs.acr_name }}
+                      imageTag:${{ github.sha }}
 
             # Deploys application based on manifest files from previous step
             - name: Deploy application
