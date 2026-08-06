@@ -8,6 +8,15 @@ spec:
   rules:
     - http:
         paths:
+          # Route vers le Backend (déclarée en premier)
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: back-service
+                port:
+                  number: 80
+          # Route par défaut vers le Frontend Angular
           - path: /
             pathType: Prefix
             backend:
