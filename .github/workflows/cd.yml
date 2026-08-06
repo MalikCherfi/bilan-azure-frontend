@@ -42,7 +42,7 @@ jobs:
                   --image ${{ steps.get-acr.outputs.acr_name }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} \
                   --registry ${{ steps.get-acr.outputs.acr_name }} \
                   --build-arg API_BASE_URL="http://40.114.181.10/api" \
-                  --build-arg API_KEY="test" \ 
+                  --build-arg API_KEY="test" \
                   -g ${{ env.RESOURCE_GROUP }} .
 
     deploy:
