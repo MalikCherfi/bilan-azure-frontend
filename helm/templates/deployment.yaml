@@ -28,20 +28,6 @@ spec:
           image: '{{ .Values.acrName }}.azurecr.io/front:{{ .Values.imageTag }}'
           ports:
             - containerPort: 8080
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: 8080
-            initialDelaySeconds: 2
-            periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 3
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8080
-            failureThreshold: 30
-            periodSeconds: 10
           resources:
             requests:
               cpu: '100m'
