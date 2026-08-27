@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-front-to-back
+  namespace: malik-cherfi
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: back
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: front
+    ports:
+    - protocol: TCP
+      port: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: restrict-front-egress
+  namespace: malik-cherfi
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: front
+  policyTypes:
+  - Egress
+  egress:
+  # Autorise uniquement le DNS K8s et le service Backend
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: back
+    ports:
+    - protocol: TCP
+      port: 8080
+  - ports:
+    - protocol: UDP
+      port: 53
