@@ -1,4 +1,29 @@
-# azure-quiz-frontend
+# bilan-azure-frontend
+
+Front-end déployé sur AKS via Helm, build & CI/CD GitHub Actions (OIDC).
+
+## Contenu
+- `helm/` : Deployment, Service, Ingress (nginx), NetworkPolicy (front ↔ back), Chart.yaml, values.yaml
+- Workflow `Build and deploy` : build image (ACR) → bake Helm → deploy sur AKS
+- `setup-federated-identity.sh` : identité fédérée GitHub OIDC
+
+## Déploiement
+Workflow manuel (`workflow_dispatch`) :
+- `build_image` : construire l'image avant déploiement (défaut `true`)
+- `image_tag` : tag à déployer (défaut = SHA du commit)
+
+## Values Helm
+`acrName`, `imageTag`, `namespace`
+
+## Secrets / Variables GitHub
+Secrets : `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
+Variables : `RESOURCE_GROUP`, `RESOURCE_GROUP_SHARED`, `CLUSTER_NAME`
+
+## Dépendances
+Image poussée sur ACR, secret `backend-api-key` récupéré depuis Key Vault (`keyvault-malik-cherfi`) au build.
+
+
+## LOCAL
 
 Angular application to review Microsoft certifications (AZ-900 to start, AZ-104 next): review by
 module or mock exam, accessible from a simple link (no account). Consumes the REST API of
