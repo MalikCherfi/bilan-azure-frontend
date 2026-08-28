@@ -31,7 +31,6 @@ spec:
   policyTypes:
     - Egress
   egress:
-    # Trafic vers le backend
     - to:
         - podSelector:
             matchLabels:
