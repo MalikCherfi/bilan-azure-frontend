@@ -17,7 +17,6 @@ env:
 
 jobs:
     buildImage:
-        # S'exécute uniquement si l'option build_image est cochée (true par défaut)
         if: ${{ inputs.build_image != false }}
         permissions:
             contents: read
@@ -26,10 +25,8 @@ jobs:
         outputs:
             acr_name: ${{ steps.get-acr.outputs.acr_name }}
         steps:
-            # Checks out the repository this file is in
             - uses: actions/checkout@v7
 
-            # Logs in with your Azure credentials
             - name: Azure login
               uses: azure/login@v3
               with:
@@ -51,7 +48,6 @@ jobs:
                   keyvault: "keyvault-malik-cherfi"
                   secrets: "backend-api-key"
 
-            # TODO: replace with real key and URL
             - name: Build and push image to ACR
               run: |
                   az acr build \
@@ -68,13 +64,10 @@ jobs:
             id-token: write
         runs-on: ubuntu-latest
         needs: [buildImage]
-        # Permet à deploy de s'exécuter si buildImage est OK OU s'il a été ignoré (skipped)
         if: ${{ !cancelled() && !failure() }}
         steps:
-            # Checks out the repository this file is in
             - uses: actions/checkout@v7
 
-            # Logs in with your Azure credentials
             - name: Azure login
               uses: azure/login@v3
               with:
@@ -91,13 +84,11 @@ jobs:
                   fi
                   echo "deploy_tag=$TAG" >> "$GITHUB_OUTPUT"
 
-            # Use kubelogin to configure your kubeconfig for Azure auth
             - name: Set up kubelogin for non-interactive login
               uses: azure/use-kubelogin@v1
               with:
                   kubelogin-version: "v0.2.19"
 
-            # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
             - name: Get K8s context
               uses: azure/aks-set-context@v3
               with:
@@ -106,7 +97,6 @@ jobs:
                   admin: "false"
                   use-kubelogin: "true"
 
-            # Bake Helm Chart vers un manifest bundle unique
             - name: Bake Manifests with Helm
               uses: azure/k8s-bake@v2
               id: bake
@@ -118,7 +108,6 @@ jobs:
                       acrName:${{ needs.buildImage.outputs.acr_name }}
                       imageTag:${{ steps.get-tag.outputs.deploy_tag }}
 
-            # Deploys application based on manifest files from previous step
             - name: Deploy application
               uses: Azure/k8s-deploy@v4
               with:
