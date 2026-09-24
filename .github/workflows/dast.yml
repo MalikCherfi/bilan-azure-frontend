@@ -13,8 +13,11 @@ jobs:
         permissions:
             contents: read
             issues: write
+        outputs:
+            zap_outcome: ${{ steps.zap.outcome }}
         steps:
             - name: ZAP Baseline Scan
+              id: zap
               uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
               with:
                   target: "http://98.66.196.57/"
@@ -26,11 +29,48 @@ jobs:
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         permissions:
             contents: read
+        outputs:
+            nuclei_outcome: ${{ steps.nuclei.outcome }}
         steps:
             - uses: actions/checkout@v4
               with:
                   persist-credentials: false
             - name: Nuclei Scan
+              id: nuclei
               uses: projectdiscovery/nuclei-action@cc153d0541e1adf8a42bbe31c0a4fb2376147538 # v3.1.1
               with:
-                  args: "-u https://staging.mon-app.example.com -severity critical,high"
+                  args: "-u http://98.66.196.57/ -severity critical,high"
+
+    dast-summary:
+        name: DAST Combined Job Summary
+        needs: [zap-scan, nuclei-scan]
+        if: always()
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Generate DAST Job Summary
+              run: |
+                  echo "## 🌐 Résultat des Attaques Dynamiques (DAST)" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "**Cible scannée :** \`http://98.66.196.57/\`" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Outil DAST | Statut | Description |" >> $GITHUB_STEP_SUMMARY
+                  echo "| :--- | :---: | :--- |" >> $GITHUB_STEP_SUMMARY
+
+                  ZAP_STATUS="${{ needs.zap-scan.outputs.zap_outcome }}"
+                  NUCLEI_STATUS="${{ needs.nuclei-scan.outputs.nuclei_outcome }}"
+
+                  if [ "$ZAP_STATUS" == "success" ]; then
+                      echo "| ⚡ **OWASP ZAP** | ✅ PASSED | Aucune alerte bloquante détectée |" >> $GITHUB_STEP_SUMMARY
+                  elif [ -z "$ZAP_STATUS" ]; then
+                      echo "| ⚡ **OWASP ZAP** | ⏭️ SKIPPED | Job non exécuté |" >> $GITHUB_STEP_SUMMARY
+                  else
+                      echo "| ⚡ **OWASP ZAP** | ❌ FAILED | Alertes détectées (voir issues créées) |" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  if [ "$NUCLEI_STATUS" == "success" ]; then
+                      echo "| 🎯 **Nuclei** | ✅ PASSED | Aucune vulnérabilité Critical/High trouvée |" >> $GITHUB_STEP_SUMMARY
+                  elif [ -z "$NUCLEI_STATUS" ]; then
+                      echo "| 🎯 **Nuclei** | ⏭️ SKIPPED | Job non exécuté |" >> $GITHUB_STEP_SUMMARY
+                  else
+                      echo "| 🎯 **Nuclei** | ❌ FAILED | Vulnérabilités détectées |" >> $GITHUB_STEP_SUMMARY
+                  fi
