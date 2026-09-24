@@ -1,0 +1,36 @@
+name: DAST Scan
+on:
+    workflow_run:
+        workflows: ["Build and deploy"]
+        types: [completed]
+
+permissions: {}
+
+jobs:
+    zap-scan:
+        runs-on: ubuntu-24.04
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        permissions:
+            contents: read
+            issues: write
+        steps:
+            - name: ZAP Baseline Scan
+              uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+              with:
+                  target: "http://98.66.196.57/"
+                  rules_file_name: ".zap/rules.tsv"
+                  fail_action: true
+
+    nuclei-scan:
+        runs-on: ubuntu-24.04
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+            - name: Nuclei Scan
+              uses: projectdiscovery/nuclei-action@cc153d0541e1adf8a42bbe31c0a4fb2376147538 # v3.1.1
+              with:
+                  args: "-u https://staging.mon-app.example.com -severity critical,high"
