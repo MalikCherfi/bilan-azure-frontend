@@ -12,7 +12,7 @@ permissions:
 
 jobs:
     trivy-scan:
-        name: Trivy Security Scan
+        name: Trivy Security Scan Docker Image
         runs-on: ubuntu-latest
 
         steps:
@@ -26,25 +26,96 @@ jobs:
                     --build-arg API_KEY="dummy-key-for-trivy-scan" \
                     -t frontend-app:scan .
 
-            - name: Scan Docker Image for Vulnerabilities
+            - name: Scan Docker Image for Vulnerabilities (Table Format)
               uses: aquasecurity/trivy-action@master
               with:
                   image-ref: "frontend-app:scan"
                   format: "table"
                   vuln-type: "os,library"
+                  output: "trivy-docker-results.sarif"
                   severity: "CRITICAL,HIGH"
                   exit-code: "1"
                   ignore-unfixed: true
 
-            - name: Scan Dockerfile Misconfigurations
+            - name: Scan Docker Image for Vulnerabilities (SARIF Format)
+              uses: aquasecurity/trivy-action@master
+              with:
+                  image-ref: "frontend-app:scan"
+                  format: "sarif"
+                  vuln-type: "os,library"
+                  output: "trivy-docker-results.sarif"
+                  severity: "CRITICAL,HIGH"
+                  exit-code: "1"
+                  ignore-unfixed: true
+
+            - name: Scan Dockerfile Misconfigurations (Table Format)
               uses: aquasecurity/trivy-action@master
               with:
                   scan-type: "config"
                   format: "table"
+                  output: "trivy-dockerfile-results.sarif"
+                  exit-code: "0"
+                  severity: "CRITICAL,HIGH"
+
+            - name: Scan Dockerfile Misconfigurations (SARIF Format)
+              uses: aquasecurity/trivy-action@master
+              with:
+                  scan-type: "config"
+                  format: "sarif"
+                  output: "trivy-dockerfile-results.sarif"
                   exit-code: "0"
                   severity: "CRITICAL,HIGH"
 
             - name: Upload Trivy scan results to GitHub Security tab
               uses: github/codeql-action/upload-sarif@v3
               with:
-                  sarif_file: "trivy-results.sarif"
+                  sarif_file: "trivy-docker-results.sarif"
+
+    chart-test:
+        name: Trivy Security Scan Helm Chart
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Helm
+              uses: azure/setup-helm@v3
+              with:
+                  version: v3.6.3
+
+            - name: Set up python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: 3.7
+
+            - name: Scan Helm Chart for Misconfigurations (Table Format)
+              uses: aquasecurity/trivy-action@master
+              with:
+                  scan-type: "config"
+                  hide-progress: false
+                  format: "table"
+                  scan-ref: "helm"
+                  output: "trivy-helm-results.sarif"
+                  exit-code: "1"
+                  severity: "CRITICAL,HIGH"
+                  ignore-unfixed: true
+
+            - name: Scan Helm Chart for Misconfigurations (SARIF Format)
+              uses: aquasecurity/trivy-action@master
+              with:
+                  scan-type: "config"
+                  hide-progress: false
+                  format: "sarif"
+                  scan-ref: "helm"
+                  output: "trivy-helm-results.sarif"
+                  exit-code: "1"
+                  severity: "CRITICAL,HIGH"
+                  ignore-unfixed: true
+
+            - name: Upload Trivy scan results to GitHub Security tab
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                  sarif_file: "trivy-helm-results.sarif"
