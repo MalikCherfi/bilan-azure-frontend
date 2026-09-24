@@ -38,6 +38,7 @@ jobs:
                   ignore-unfixed: true
 
             - name: Scan Docker Image for Vulnerabilities (SARIF Format)
+              if: always()
               uses: aquasecurity/trivy-action@master
               with:
                   image-ref: "frontend-app:scan"
@@ -49,6 +50,7 @@ jobs:
                   ignore-unfixed: true
 
             - name: Scan Dockerfile Misconfigurations (Table Format)
+              if: always()
               uses: aquasecurity/trivy-action@master
               with:
                   scan-type: "config"
@@ -58,6 +60,7 @@ jobs:
                   severity: "CRITICAL,HIGH"
 
             - name: Scan Dockerfile Misconfigurations (SARIF Format)
+              if: always()
               uses: aquasecurity/trivy-action@master
               with:
                   scan-type: "config"
@@ -66,10 +69,29 @@ jobs:
                   exit-code: "0"
                   severity: "CRITICAL,HIGH"
 
-            - name: Upload Trivy scan results to GitHub Security tab
+            - name: Upload Docker Image Trivy scan results to GitHub Security tab
+              if: always()
               uses: github/codeql-action/upload-sarif@v3
               with:
                   sarif_file: "trivy-docker-results.sarif"
+                  category: "trivy-docker"
+
+            - name: Upload Dockerfile Trivy scan results to GitHub Security tab
+              if: always()
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                  sarif_file: "trivy-dockerfile-results.sarif"
+                  category: "trivy-dockerfile"
+
+            - name: Upload Trivy results as artifact
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: trivy-docker-artifacts
+                  path: |
+                      trivy-docker-results.sarif
+                      trivy-dockerfile-results.sarif
+                  retention-days: 5
 
     chart-test:
         name: Trivy Security Scan Helm Chart
@@ -104,6 +126,7 @@ jobs:
                   ignore-unfixed: true
 
             - name: Scan Helm Chart for Misconfigurations (SARIF Format)
+              if: always()
               uses: aquasecurity/trivy-action@master
               with:
                   scan-type: "config"
@@ -116,6 +139,65 @@ jobs:
                   ignore-unfixed: true
 
             - name: Upload Trivy scan results to GitHub Security tab
+              if: always()
               uses: github/codeql-action/upload-sarif@v3
               with:
                   sarif_file: "trivy-helm-results.sarif"
+                  category: "trivy-helm"
+
+            - name: Upload Trivy results as artifact
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: trivy-helm-artifacts
+                  path: trivy-helm-results.sarif
+                  retention-days: 5
+
+    job-summary:
+        name: Trivy Combined Job Summary
+        needs: [trivy-scan, chart-test]
+        if: always()
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Download Docker/Dockerfile artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: trivy-docker-artifacts
+                  path: docker-results
+              continue-on-error: true
+
+            - name: Download Helm artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: trivy-helm-artifacts
+                  path: helm-results
+              continue-on-error: true
+
+            - name: Generate Combined Job Summary
+              run: |
+                  echo "## 🛡️ Résultat du Scan de Sécurité Trivy" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Cible | Fichier Rapport | Statut SARIF |" >> $GITHUB_STEP_SUMMARY
+                  echo "| :--- | :--- | :---: |" >> $GITHUB_STEP_SUMMARY
+
+                  if [ -f docker-results/trivy-docker-results.sarif ]; then
+                      echo "| 🐳 **Image Docker** (\`frontend-app:scan\`) | \`trivy-docker-results.sarif\` | ✅ Uploadé |" >> $GITHUB_STEP_SUMMARY
+                  else
+                      echo "| 🐳 **Image Docker** | - | ❌ Échec |" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  if [ -f docker-results/trivy-dockerfile-results.sarif ]; then
+                      echo "| 📄 **Dockerfile** | \`trivy-dockerfile-results.sarif\` | ✅ Uploadé |" >> $GITHUB_STEP_SUMMARY
+                  else
+                      echo "| 📄 **Dockerfile** | - | ❌ Échec |" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  if [ -f helm-results/trivy-helm-results.sarif ]; then
+                      echo "| ☸️ **Helm Chart** (\`./helm\`) | \`trivy-helm-results.sarif\` | ✅ Uploadé |" >> $GITHUB_STEP_SUMMARY
+                  else
+                      echo "| ☸️ **Helm Chart** | - | ❌ Échec |" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "📊 **Consultez l'onglet [Security > Code scanning](../../security/code-scanning) pour le détail des vulnérabilités.**" >> $GITHUB_STEP_SUMMARY
