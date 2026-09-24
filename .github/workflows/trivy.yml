@@ -111,7 +111,7 @@ jobs:
             - name: Set up python
               uses: actions/setup-python@v4
               with:
-                  python-version: 3.7
+                  python-version: "3.x"
 
             - name: Scan Helm Chart for Misconfigurations (Table Format)
               uses: aquasecurity/trivy-action@master
