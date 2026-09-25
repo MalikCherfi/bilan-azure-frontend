@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: front-app
-  namespace: {{ .Values.namespace }}
+  namespace: { { .Values.namespace } }
 spec:
   replicas: 1
   selector:
@@ -26,6 +26,8 @@ spec:
       containers:
         - name: front-container
           image: '{{ .Values.acrName }}.azurecr.io/front:{{ .Values.imageTag }}'
+          securityContext:
+            readOnlyRootFilesystem: true
           ports:
             - containerPort: 8080
           resources:
