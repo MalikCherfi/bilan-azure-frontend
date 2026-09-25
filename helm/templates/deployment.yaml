@@ -5,12 +5,6 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 10001
-    runAsGroup: 10001
-    seccompProfile:
-      type: RuntimeDefault
   selector:
     matchLabels:
       app.kubernetes.io/name: front
@@ -29,9 +23,18 @@ spec:
         app.kubernetes.io/part-of: front-app
         app.kubernetes.io/managed-by: Helm
     spec:
+      # ── SecurityContext du POD (déplacé ici) ──────────────────────────
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
       containers:
         - name: front-container
           image: '{{ .Values.acrName }}.azurecr.io/front:{{ .Values.imageTag }}'
+          # ── SecurityContext du CONTENEUR ──────────────────────────────
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
