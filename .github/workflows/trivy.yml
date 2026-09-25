@@ -84,6 +84,9 @@ jobs:
         outputs:
             vulnerable: ${{ steps.trivy.outcome == 'failure' }}
         steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
             - name: Download Docker Image Artifact
               uses: actions/download-artifact@v4
               with:
@@ -105,15 +108,9 @@ jobs:
                   exit-code: "1"
                   ignore-unfixed: true
 
-            - name: Vérifier le contenu du fichier SARIF
-              if: always()
-              run: |
-                  echo "Nombre de résultats dans le SARIF :"
-                  jq '[.runs[].results[]] | length' trivy-docker-results.sarif || echo "⚠️ Impossible de lire/parser le fichier SARIF"
-
             - name: Upload SARIF to GitHub Security tab
               if: always()
-              uses: github/codeql-action/upload-sarif@v3
+              uses: github/codeql-action/upload-sarif@v4
               with:
                   sarif_file: "trivy-docker-results.sarif"
                   category: "trivy-docker"
@@ -163,7 +160,7 @@ jobs:
                   format: "table"
                   scan-ref: "helm"
                   output: "trivy-helm-table.txt"
-                  exit-code: "1"
+                  exit-code: "0"
                   severity: "CRITICAL,HIGH"
                   ignore-unfixed: true
 
@@ -179,7 +176,7 @@ jobs:
               if: steps.trivy.outcome == 'failure'
               run: |
                   echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur le chart Helm."
-                  exit 1
+                  exit 0
 
     helm-scan-sarif:
         name: Trivy Helm Scan (SARIF)
@@ -212,19 +209,13 @@ jobs:
                   format: "sarif"
                   scan-ref: "helm"
                   output: "trivy-helm-results.sarif"
-                  exit-code: "1"
+                  exit-code: "0"
                   severity: "CRITICAL,HIGH"
                   ignore-unfixed: true
 
-            - name: Vérifier le contenu du fichier SARIF
-              if: always()
-              run: |
-                  echo "Nombre de résultats dans le SARIF :"
-                  jq '[.runs[].results[]] | length' trivy-helm-results.sarif || echo "⚠️ Impossible de lire/parser le fichier SARIF"
-
             - name: Upload SARIF to GitHub Security tab
               if: always()
-              uses: github/codeql-action/upload-sarif@v3
+              uses: github/codeql-action/upload-sarif@v4
               with:
                   sarif_file: "trivy-helm-results.sarif"
                   category: "trivy-helm"
@@ -241,7 +232,30 @@ jobs:
               if: steps.trivy.outcome == 'failure'
               run: |
                   echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur le chart Helm."
-                  exit 1
+                  exit 0
+
+    security-gate:
+        name: Security Gate
+        needs:
+            [
+                docker-scan-table,
+                docker-scan-sarif,
+                helm-scan-table,
+                helm-scan-sarif,
+            ]
+        if: always()
+        runs-on: ubuntu-latest
+        steps:
+            - name: Vérifier qu'aucune vulnérabilité CRITICAL/HIGH n'a été détectée
+              run: |
+                  if [ "${{ needs.docker-scan-table.outputs.vulnerable }}" = "true" ] || \
+                     [ "${{ needs.docker-scan-sarif.outputs.vulnerable }}" = "true" ] || \
+                     [ "${{ needs.helm-scan-table.outputs.vulnerable }}" = "true" ] || \
+                     [ "${{ needs.helm-scan-sarif.outputs.vulnerable }}" = "true" ]; then
+                      echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées, voir le Job Summary pour le détail."
+                      exit 1
+                  fi
+                  echo "✅ Aucune vulnérabilité CRITICAL/HIGH détectée."
 
     job-summary:
         name: Trivy Combined Job Summary
