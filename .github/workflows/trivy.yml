@@ -141,7 +141,7 @@ jobs:
                   fetch-depth: 0
 
             - name: Set up Helm
-              uses: azure/setup-helm@b85984b901f10908cd32321c0c203c7186607506
+              uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310
               with:
                   version: v3.6.3
 
@@ -160,7 +160,7 @@ jobs:
                   format: "table"
                   scan-ref: "helm"
                   output: "trivy-helm-table.txt"
-                  exit-code: "0"
+                  exit-code: "1"
                   severity: "CRITICAL,HIGH"
                   ignore-unfixed: true
 
@@ -176,7 +176,7 @@ jobs:
               if: steps.trivy.outcome == 'failure'
               run: |
                   echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur le chart Helm."
-                  exit 0
+                  exit 1
 
     helm-scan-sarif:
         name: Trivy Helm Scan (SARIF)
@@ -190,7 +190,7 @@ jobs:
                   fetch-depth: 0
 
             - name: Set up Helm
-              uses: azure/setup-helm@b85984b901f10908cd32321c0c203c7186607506
+              uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310
               with:
                   version: v3.6.3
 
@@ -209,7 +209,7 @@ jobs:
                   format: "sarif"
                   scan-ref: "helm"
                   output: "trivy-helm-results.sarif"
-                  exit-code: "0"
+                  exit-code: "1"
                   severity: "CRITICAL,HIGH"
                   ignore-unfixed: true
 
@@ -232,7 +232,7 @@ jobs:
               if: steps.trivy.outcome == 'failure'
               run: |
                   echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur le chart Helm."
-                  exit 0
+                  exit 1
 
     security-gate:
         name: Security Gate
