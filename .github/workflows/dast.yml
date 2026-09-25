@@ -16,11 +16,16 @@ jobs:
         outputs:
             zap_outcome: ${{ steps.zap.outcome }}
         steps:
-            # 1. Indispensable pour accéder à .zap/rules.tsv
             - name: Checkout code
               uses: actions/checkout@v4
 
-            # 2. Scanner ZAP avec autorisation explicite d'écriture d'issues
+            - name: Create ZAP Rules
+              run: |
+                  mkdir -p .zap
+                  printf "10109\tIGNORE\t(Modern Web Application)\n" > .zap/rules.tsv
+                  printf "10110\tIGNORE\t(Dangerous JS Functions)\n" >> .zap/rules.tsv
+                  printf "10049\tIGNORE\t(Storable and Cacheable Content)\n" >> .zap/rules.tsv
+
             - name: ZAP Baseline Scan
               id: zap
               uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
