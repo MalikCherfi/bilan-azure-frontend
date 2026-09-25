@@ -50,13 +50,13 @@ spec:
             limits:
               cpu: '200m'
               memory: '128Mi'
-            volumeMounts:
-              - name: nginx-cache
-                mountPath: /var/cache/nginx
-              - name: nginx-run
-                mountPath: /var/run
-              - name: tmp
-                mountPath: /tmp
+          volumeMounts:
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+            - name: nginx-run
+              mountPath: /var/run
+            - name: tmp
+              mountPath: /tmp
 
       volumes:
         - name: nginx-cache
