@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: front-app
-  namespace: {{ .Values.namespace }}
+  namespace: { { .Values.namespace } }
 spec:
   replicas: 1
   selector:
@@ -50,3 +50,18 @@ spec:
             limits:
               cpu: '200m'
               memory: '128Mi'
+            volumeMounts:
+              - name: nginx-cache
+                mountPath: /var/cache/nginx
+              - name: nginx-run
+                mountPath: /var/run
+              - name: tmp
+                mountPath: /tmp
+
+      volumes:
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
