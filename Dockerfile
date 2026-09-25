@@ -13,6 +13,7 @@
 # --set`, same constraint that already exists for the Static Web App track.
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 # ── Build stage ─────────────────────────────────────────────────────────────
 FROM node:24-alpine AS build
 WORKDIR /app
@@ -23,10 +24,12 @@ RUN npm ci
 COPY . .
 
 ARG API_BASE_URL
-ARG API_KEY
-RUN test -n "$API_BASE_URL" && test -n "$API_KEY" || (echo "API_BASE_URL and API_KEY build args are required" && exit 1)
-RUN sed -i "s#https://REPLACE_WITH_PROD_API_URL/api#${API_BASE_URL}#" src/environments/environment.ts \
- && sed -i "s/__BACKEND_API_KEY__/${API_KEY}/" src/environments/environment.ts
+
+RUN --mount=type=secret,id=API_KEY \
+    API_KEY_VAL=$(cat /run/secrets/API_KEY) && \
+    test -n "$API_BASE_URL" && test -n "$API_KEY_VAL" || (echo "API_BASE_URL and API_KEY build secrets are required" && exit 1) && \
+    sed -i "s#https://REPLACE_WITH_PROD_API_URL/api#${API_BASE_URL}#" src/environments/environment.ts && \
+    sed -i "s/__BACKEND_API_KEY__/${API_KEY_VAL}/" src/environments/environment.ts
 
 RUN npm run build:prod
 
@@ -35,7 +38,14 @@ FROM nginx:1.27-alpine
 
 RUN apk update && apk upgrade --no-cache
 
+RUN mkdir -p /var/cache/nginx /var/run /tmp \
+ && chown -R 10001:10001 /var/cache/nginx /var/run /tmp /usr/share/nginx/html /etc/nginx/conf.d
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/azure-quiz-frontend/browser /usr/share/nginx/html
 
-EXPOSE 80
+USER 10001
+
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]
