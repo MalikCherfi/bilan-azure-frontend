@@ -22,7 +22,7 @@ jobs:
               run: |
                   docker build \
                     --build-arg API_BASE_URL="https://api.example.com" \
-                    --build-arg API_KEY="dummy-key-for-trivy-scan" \
+                    --secret API_KEY="dummy-key-for-trivy-scan" \
                     -t frontend-app:scan .
 
             - name: Save Docker Image
