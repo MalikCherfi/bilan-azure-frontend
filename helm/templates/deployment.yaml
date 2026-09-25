@@ -33,7 +33,11 @@ spec:
         - name: front-container
           image: '{{ .Values.acrName }}.azurecr.io/front:{{ .Values.imageTag }}'
           securityContext:
+            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 8080
           resources:
