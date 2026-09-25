@@ -104,7 +104,7 @@ jobs:
                   kubelogin-version: "v0.2.19"
 
             - name: Get K8s context
-              uses: azure/aks-set-context@v3
+              uses: azure/aks-set-context@60623acbdcbbdcf799ad50a1adf8703874339f8b #v5.0.0
               with:
                   resource-group: ${{ vars.RESOURCE_GROUP_SHARED }}
                   cluster-name: ${{ vars.CLUSTER_NAME }}
