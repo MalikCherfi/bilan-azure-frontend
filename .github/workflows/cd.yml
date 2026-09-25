@@ -66,7 +66,7 @@ jobs:
                   --image ${{ steps.get-acr.outputs.acr_name }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} \
                   --registry ${{ steps.get-acr.outputs.acr_name }} \
                   --build-arg API_BASE_URL="/api" \
-                  --secret API_KEY="${{ steps.keyvault.outputs.backend-api-key }}" \
+                  --build-arg API_KEY="${{ steps.keyvault.outputs.backend-api-key }}" \
                   -g ${{ vars.RESOURCE_GROUP }} .
 
     deploy:
