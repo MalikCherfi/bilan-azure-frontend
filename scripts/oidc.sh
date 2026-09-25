@@ -4,7 +4,6 @@ set -euo pipefail
 RG="mcherfiRG"
 LOCATION="francecentral"
 IDENTITY_NAME="github-mi-malikcherfi"
-GITHUB_ORG="MalikCherfi"
 GITHUB_REPO="bilan-azure-frontend"
 BRANCH="main"
 
