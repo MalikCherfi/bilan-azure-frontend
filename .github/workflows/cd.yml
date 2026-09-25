@@ -55,7 +55,7 @@ jobs:
 
             - name: Fetch secrets from Key Vault
               id: keyvault
-              uses: Azure/get-keyvault-secrets@v1
+              uses: Azure/get-keyvault-secrets@f50cac23d2003b9a4cd2afb6c9950f5710ec6f29 #v1.1.0
               with:
                   keyvault: "keyvault-malik-cherfi"
                   secrets: "backend-api-key"
