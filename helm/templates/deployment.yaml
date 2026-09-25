@@ -5,6 +5,12 @@ metadata:
   namespace: { { .Values.namespace } }
 spec:
   replicas: 1
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    seccompProfile:
+      type: RuntimeDefault
   selector:
     matchLabels:
       app.kubernetes.io/name: front
