@@ -112,7 +112,7 @@ jobs:
                   use-kubelogin: "true"
 
             - name: Bake Manifests with Helm
-              uses: azure/k8s-bake@v2
+              uses: azure/k8s-bake@0191a5ae5126cfe61885d9bd46511caa8e9a9550 #v4.1.0
               id: bake
               with:
                   renderEngine: "helm"
