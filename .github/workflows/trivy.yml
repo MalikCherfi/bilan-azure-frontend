@@ -1,0 +1,340 @@
+name: Trivy Container & Dockerfile Security Scan
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
+
+permissions:
+    contents: read
+    security-events: write
+
+jobs:
+    build-image:
+        name: Build Docker Image
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Build Docker Image
+              run: |
+                  docker build \
+                    --build-arg API_BASE_URL="https://api.example.com" \
+                    --build-arg API_KEY="dummy-key-for-trivy-scan" \
+                    -t frontend-app:scan .
+
+            - name: Save Docker Image
+              run: docker save frontend-app:scan | gzip > frontend-app-scan.tar.gz
+
+            - name: Upload Docker Image Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docker-image
+                  path: frontend-app-scan.tar.gz
+                  retention-days: 1
+
+    docker-scan-table:
+        name: Trivy Docker Scan (Table)
+        needs: build-image
+        runs-on: ubuntu-latest
+        outputs:
+            vulnerable: ${{ steps.trivy.outcome == 'failure' }}
+        steps:
+            - name: Download Docker Image Artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: docker-image
+
+            - name: Load Docker Image
+              run: docker load < frontend-app-scan.tar.gz
+
+            - name: Scan Docker Image (Table Format)
+              id: trivy
+              continue-on-error: true
+              uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # v0.74.0
+              with:
+                  image-ref: "frontend-app:scan"
+                  format: "table"
+                  vuln-type: "os,library"
+                  output: "trivy-docker-table.txt"
+                  severity: "CRITICAL,HIGH"
+                  exit-code: "1"
+                  ignore-unfixed: true
+
+            - name: Upload Table Report Artifact
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: trivy-docker-table
+                  path: trivy-docker-table.txt
+                  retention-days: 5
+
+            - name: Fail Job if Vulnerabilities Found
+              if: steps.trivy.outcome == 'failure'
+              run: |
+                  echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur l'image Docker."
+                  exit 1
+
+    docker-scan-sarif:
+        name: Trivy Docker Scan (SARIF)
+        needs: build-image
+        runs-on: ubuntu-latest
+        outputs:
+            vulnerable: ${{ steps.trivy.outcome == 'failure' }}
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Download Docker Image Artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: docker-image
+
+            - name: Load Docker Image
+              run: docker load < frontend-app-scan.tar.gz
+
+            - name: Scan Docker Image (SARIF Format)
+              id: trivy
+              continue-on-error: true
+              uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # v0.74.0
+              with:
+                  image-ref: "frontend-app:scan"
+                  format: "sarif"
+                  vuln-type: "os,library"
+                  output: "trivy-docker-results.sarif"
+                  severity: "CRITICAL,HIGH"
+                  exit-code: "1"
+                  ignore-unfixed: true
+
+            - name: Upload SARIF to GitHub Security tab
+              if: always()
+              uses: github/codeql-action/upload-sarif@v4
+              with:
+                  sarif_file: "trivy-docker-results.sarif"
+                  category: "trivy-docker"
+
+            - name: Upload SARIF Artifact
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: trivy-docker-sarif
+                  path: trivy-docker-results.sarif
+                  retention-days: 5
+
+            - name: Fail Job if Vulnerabilities Found
+              if: steps.trivy.outcome == 'failure'
+              run: |
+                  echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur l'image Docker."
+                  exit 1
+
+    helm-scan-table:
+        name: Trivy Helm Scan (Table)
+        runs-on: ubuntu-latest
+        outputs:
+            vulnerable: ${{ steps.trivy.outcome == 'failure' }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Helm
+              uses: azure/setup-helm@b85984b901f10908cd32321c0c203c7186607506
+              with:
+                  version: v3.6.3
+
+            - name: Set up python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.x"
+
+            - name: Scan Helm Chart (Table Format)
+              id: trivy
+              continue-on-error: true
+              uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # v0.74.0
+              with:
+                  scan-type: "config"
+                  hide-progress: false
+                  format: "table"
+                  scan-ref: "helm"
+                  output: "trivy-helm-table.txt"
+                  exit-code: "0"
+                  severity: "CRITICAL,HIGH"
+                  ignore-unfixed: true
+
+            - name: Upload Table Report Artifact
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: trivy-helm-table
+                  path: trivy-helm-table.txt
+                  retention-days: 5
+
+            - name: Fail Job if Vulnerabilities Found
+              if: steps.trivy.outcome == 'failure'
+              run: |
+                  echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur le chart Helm."
+                  exit 0
+
+    helm-scan-sarif:
+        name: Trivy Helm Scan (SARIF)
+        runs-on: ubuntu-latest
+        outputs:
+            vulnerable: ${{ steps.trivy.outcome == 'failure' }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Helm
+              uses: azure/setup-helm@b85984b901f10908cd32321c0c203c7186607506
+              with:
+                  version: v3.6.3
+
+            - name: Set up python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.x"
+
+            - name: Scan Helm Chart (SARIF Format)
+              id: trivy
+              continue-on-error: true
+              uses: aquasecurity/trivy-action@d2a0b60797ff03db6132bd4e2b293f9b37081297 # v0.74.0
+              with:
+                  scan-type: "config"
+                  hide-progress: false
+                  format: "sarif"
+                  scan-ref: "helm"
+                  output: "trivy-helm-results.sarif"
+                  exit-code: "0"
+                  severity: "CRITICAL,HIGH"
+                  ignore-unfixed: true
+
+            - name: Upload SARIF to GitHub Security tab
+              if: always()
+              uses: github/codeql-action/upload-sarif@v4
+              with:
+                  sarif_file: "trivy-helm-results.sarif"
+                  category: "trivy-helm"
+
+            - name: Upload SARIF Artifact
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: trivy-helm-sarif
+                  path: trivy-helm-results.sarif
+                  retention-days: 5
+
+            - name: Fail Job if Vulnerabilities Found
+              if: steps.trivy.outcome == 'failure'
+              run: |
+                  echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur le chart Helm."
+                  exit 0
+
+    security-gate:
+        name: Security Gate
+        needs:
+            [
+                docker-scan-table,
+                docker-scan-sarif,
+                helm-scan-table,
+                helm-scan-sarif,
+            ]
+        if: always()
+        runs-on: ubuntu-latest
+        steps:
+            - name: Vérifier qu'aucune vulnérabilité CRITICAL/HIGH n'a été détectée
+              run: |
+                  if [ "${{ needs.docker-scan-table.outputs.vulnerable }}" = "true" ] || \
+                     [ "${{ needs.docker-scan-sarif.outputs.vulnerable }}" = "true" ] || \
+                     [ "${{ needs.helm-scan-table.outputs.vulnerable }}" = "true" ] || \
+                     [ "${{ needs.helm-scan-sarif.outputs.vulnerable }}" = "true" ]; then
+                      echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées, voir le Job Summary pour le détail."
+                      exit 1
+                  fi
+                  echo "✅ Aucune vulnérabilité CRITICAL/HIGH détectée."
+
+    job-summary:
+        name: Trivy Combined Job Summary
+        needs:
+            [
+                docker-scan-table,
+                docker-scan-sarif,
+                helm-scan-table,
+                helm-scan-sarif,
+            ]
+        if: always()
+        runs-on: ubuntu-latest
+        steps:
+            - name: Download Docker table report
+              uses: actions/download-artifact@v4
+              with:
+                  name: trivy-docker-table
+                  path: docker-table
+              continue-on-error: true
+
+            - name: Download Helm table report
+              uses: actions/download-artifact@v4
+              with:
+                  name: trivy-helm-table
+                  path: helm-table
+              continue-on-error: true
+
+            - name: Generate Combined Job Summary
+              env:
+                  DOCKER_VULN: ${{ needs.docker-scan-table.outputs.vulnerable }}
+                  HELM_VULN: ${{ needs.helm-scan-table.outputs.vulnerable }}
+              run: |
+                  {
+                    echo "## 🛡️ Résultat du Scan de Sécurité Trivy"
+                    echo ""
+                    echo "| Cible | Statut |"
+                    echo "| :--- | :---: |"
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+                  if [ "$DOCKER_VULN" = "true" ]; then
+                      echo "| 🐳 **Image Docker** (\`frontend-app:scan\`) | ❌ Vulnérabilités détectées |" >> "$GITHUB_STEP_SUMMARY"
+                  elif [ -f docker-table/trivy-docker-table.txt ]; then
+                      echo "| 🐳 **Image Docker** (\`frontend-app:scan\`) | ✅ Aucune vulnérabilité |" >> "$GITHUB_STEP_SUMMARY"
+                  else
+                      echo "| 🐳 **Image Docker** (\`frontend-app:scan\`) | ⚠️ Scan indisponible |" >> "$GITHUB_STEP_SUMMARY"
+                  fi
+
+                  if [ "$HELM_VULN" = "true" ]; then
+                      echo "| ☸️ **Helm Chart** (\`./helm\`) | ❌ Vulnérabilités détectées |" >> "$GITHUB_STEP_SUMMARY"
+                  elif [ -f helm-table/trivy-helm-table.txt ]; then
+                      echo "| ☸️ **Helm Chart** (\`./helm\`) | ✅ Aucune vulnérabilité |" >> "$GITHUB_STEP_SUMMARY"
+                  else
+                      echo "| ☸️ **Helm Chart** (\`./helm\`) | ⚠️ Scan indisponible |" >> "$GITHUB_STEP_SUMMARY"
+                  fi
+
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+
+                  if [ "$DOCKER_VULN" = "true" ] && [ -f docker-table/trivy-docker-table.txt ]; then
+                      {
+                        echo "<details><summary>🐳 Détail des vulnérabilités - Image Docker</summary>"
+                        echo ""
+                        echo '```'
+                        cat docker-table/trivy-docker-table.txt
+                        echo '```'
+                        echo "</details>"
+                        echo ""
+                      } >> "$GITHUB_STEP_SUMMARY"
+                  fi
+
+                  if [ "$HELM_VULN" = "true" ] && [ -f helm-table/trivy-helm-table.txt ]; then
+                      {
+                        echo "<details><summary>☸️ Détail des vulnérabilités - Helm Chart</summary>"
+                        echo ""
+                        echo '```'
+                        cat helm-table/trivy-helm-table.txt
+                        echo '```'
+                        echo "</details>"
+                        echo ""
+                      } >> "$GITHUB_STEP_SUMMARY"
+                  fi
+
+                  echo "📊 **Détails complets (SARIF) : onglet [Security > Code scanning](../../security/code-scanning)**" >> "$GITHUB_STEP_SUMMARY"
