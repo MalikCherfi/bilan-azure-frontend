@@ -28,7 +28,7 @@ jobs:
             - uses: actions/checkout@v7
 
             - name: Azure login
-              uses: azure/login@v3
+              uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 #v3.1.0
               with:
                   client-id: ${{ secrets.AZURE_CLIENT_ID }}
                   tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -55,7 +55,7 @@ jobs:
 
             - name: Fetch secrets from Key Vault
               id: keyvault
-              uses: Azure/get-keyvault-secrets@v1
+              uses: Azure/get-keyvault-secrets@f50cac23d2003b9a4cd2afb6c9950f5710ec6f29 #v1.1.0
               with:
                   keyvault: "keyvault-malik-cherfi"
                   secrets: "backend-api-key"
@@ -65,8 +65,8 @@ jobs:
                   az acr build \
                   --image ${{ steps.get-acr.outputs.acr_name }}.azurecr.io/${{ env.CONTAINER_NAME }}:${{ github.sha }} \
                   --registry ${{ steps.get-acr.outputs.acr_name }} \
-                  --build-arg API_BASE_URL="/api" \
-                  --build-arg API_KEY="${{ steps.keyvault.outputs.backend-api-key }}" \
+                  --secret API_BASE_URL="/api" \
+                  --secret API_KEY="${{ steps.keyvault.outputs.backend-api-key }}" \
                   -g ${{ vars.RESOURCE_GROUP }} .
 
     deploy:
@@ -81,7 +81,7 @@ jobs:
             - uses: actions/checkout@v7
 
             - name: Azure login
-              uses: azure/login@v3
+              uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 #v3.1.0
               with:
                   client-id: ${{ secrets.AZURE_CLIENT_ID }}
                   tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -89,20 +89,22 @@ jobs:
 
             - name: Resolve Tag
               id: get-tag
+              env:
+                  IMAGE_TAG: ${{ inputs.image_tag }}
               run: |
-                  TAG="${{ inputs.image_tag }}"
+                  TAG="$IMAGE_TAG"
                   if [ -z "$TAG" ]; then
                     TAG="${{ github.sha }}"
                   fi
                   echo "deploy_tag=$TAG" >> "$GITHUB_OUTPUT"
 
             - name: Set up kubelogin for non-interactive login
-              uses: azure/use-kubelogin@v1
+              uses: azure/use-kubelogin@76597ae0fcbaace21b05e13a2cbf8daee2c6e820 #v1.3
               with:
                   kubelogin-version: "v0.2.19"
 
             - name: Get K8s context
-              uses: azure/aks-set-context@v3
+              uses: azure/aks-set-context@60623acbdcbbdcf799ad50a1adf8703874339f8b #v5.0.0
               with:
                   resource-group: ${{ vars.RESOURCE_GROUP_SHARED }}
                   cluster-name: ${{ vars.CLUSTER_NAME }}
@@ -110,7 +112,7 @@ jobs:
                   use-kubelogin: "true"
 
             - name: Bake Manifests with Helm
-              uses: azure/k8s-bake@v2
+              uses: azure/k8s-bake@0191a5ae5126cfe61885d9bd46511caa8e9a9550 #v4.1.0
               id: bake
               with:
                   renderEngine: "helm"
@@ -121,7 +123,7 @@ jobs:
                       imageTag:${{ steps.get-tag.outputs.deploy_tag }}
 
             - name: Deploy application
-              uses: Azure/k8s-deploy@v4
+              uses: Azure/k8s-deploy@bf1ec05e1d736ac4ac70bae889d3ec48c79e2213 #v7.0.1
               with:
                   action: deploy
                   namespace: "malik-cherfi"

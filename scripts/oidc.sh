@@ -4,14 +4,13 @@ set -euo pipefail
 RG="mcherfiRG"
 LOCATION="francecentral"
 IDENTITY_NAME="github-mi-malikcherfi"
-GITHUB_ORG="MalikCherfi"
 GITHUB_REPO="bilan-azure-frontend"
 BRANCH="main"
 
 RG_ID=$(az group show --name "mcherfiRG" --query id -o tsv)
 PRINCIPAL_ID=$(az identity show --name "github-mi-malikcherfi" --resource-group "mcherfiRG" --query principalId -o tsv)
 
-if [ -z "$PRINCIPAL_ID" ]; then
+if [[ -z "$PRINCIPAL_ID" ]]; then
   az identity create \
     --name "$IDENTITY_NAME" \
     --resource-group "$RG" \
