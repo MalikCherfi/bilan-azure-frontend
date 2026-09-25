@@ -16,12 +16,19 @@ jobs:
         outputs:
             zap_outcome: ${{ steps.zap.outcome }}
         steps:
+            # 1. Indispensable pour accéder à .zap/rules.tsv
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            # 2. Scanner ZAP avec autorisation explicite d'écriture d'issues
             - name: ZAP Baseline Scan
               id: zap
               uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
               with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
                   target: "http://98.66.196.57/"
                   rules_file_name: ".zap/rules.tsv"
+                  allow_issue_writing: true
                   fail_action: true
 
     nuclei-scan:
@@ -49,6 +56,8 @@ jobs:
         steps:
             - name: Generate DAST Job Summary
               run: |
+                  ISSUES_URL="https://github.com/${{ github.repository }}/issues"
+
                   echo "## 🌐 Résultat des Attaques Dynamiques (DAST)" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "**Cible scannée :** \`http://98.66.196.57/\`" >> $GITHUB_STEP_SUMMARY
@@ -64,7 +73,7 @@ jobs:
                   elif [ -z "$ZAP_STATUS" ]; then
                       echo "| ⚡ **OWASP ZAP** | ⏭️ SKIPPED | Job non exécuté |" >> $GITHUB_STEP_SUMMARY
                   else
-                      echo "| ⚡ **OWASP ZAP** | ❌ FAILED | Alertes détectées (voir issues créées) |" >> $GITHUB_STEP_SUMMARY
+                      echo "| ⚡ **OWASP ZAP** | ❌ FAILED | Alertes détectées ([Consulter les issues GitHub]($ISSUES_URL)) \vert{}" >> $GITHUB_STEP_SUMMARY
                   fi
 
                   if [ "$NUCLEI_STATUS" == "success" ]; then
@@ -72,5 +81,5 @@ jobs:
                   elif [ -z "$NUCLEI_STATUS" ]; then
                       echo "| 🎯 **Nuclei** | ⏭️ SKIPPED | Job non exécuté |" >> $GITHUB_STEP_SUMMARY
                   else
-                      echo "| 🎯 **Nuclei** | ❌ FAILED | Vulnérabilités détectées |" >> $GITHUB_STEP_SUMMARY
+                      echo "| 🎯 **Nuclei** | ❌ FAILED | Vulnérabilités détectées ([Consulter les issues GitHub]($ISSUES_URL)) \vert{}" >> $GITHUB_STEP_SUMMARY
                   fi
