@@ -105,6 +105,7 @@ jobs:
                   vuln-type: "os,library"
                   output: "trivy-docker-results.sarif"
                   severity: "CRITICAL,HIGH"
+                  limit-severities-for-sarif: true
                   exit-code: "1"
                   ignore-unfixed: true
 
@@ -211,6 +212,7 @@ jobs:
                   output: "trivy-helm-results.sarif"
                   exit-code: "1"
                   severity: "CRITICAL,HIGH"
+                  limit-severities-for-sarif: true
                   ignore-unfixed: true
 
             - name: Upload SARIF to GitHub Security tab
