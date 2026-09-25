@@ -99,7 +99,7 @@ jobs:
                   echo "deploy_tag=$TAG" >> "$GITHUB_OUTPUT"
 
             - name: Set up kubelogin for non-interactive login
-              uses: azure/use-kubelogin@v1
+              uses: azure/use-kubelogin@76597ae0fcbaace21b05e13a2cbf8daee2c6e820 #v1.3
               with:
                   kubelogin-version: "v0.2.19"
 
