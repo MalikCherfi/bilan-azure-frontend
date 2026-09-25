@@ -71,6 +71,12 @@ jobs:
                   path: trivy-docker-table.txt
                   retention-days: 5
 
+            - name: Fail Job if Vulnerabilities Found
+              if: steps.trivy.outcome == 'failure'
+              run: |
+                  echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur l'image Docker."
+                  exit 1
+
     docker-scan-sarif:
         name: Trivy Docker Scan (SARIF)
         needs: build-image
@@ -99,6 +105,12 @@ jobs:
                   exit-code: "1"
                   ignore-unfixed: true
 
+            - name: Vérifier le contenu du fichier SARIF
+              if: always()
+              run: |
+                  echo "Nombre de résultats dans le SARIF :"
+                  jq '[.runs[].results[]] | length' trivy-docker-results.sarif || echo "⚠️ Impossible de lire/parser le fichier SARIF"
+
             - name: Upload SARIF to GitHub Security tab
               if: always()
               uses: github/codeql-action/upload-sarif@v3
@@ -113,6 +125,12 @@ jobs:
                   name: trivy-docker-sarif
                   path: trivy-docker-results.sarif
                   retention-days: 5
+
+            - name: Fail Job if Vulnerabilities Found
+              if: steps.trivy.outcome == 'failure'
+              run: |
+                  echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur l'image Docker."
+                  exit 1
 
     helm-scan-table:
         name: Trivy Helm Scan (Table)
@@ -157,6 +175,12 @@ jobs:
                   path: trivy-helm-table.txt
                   retention-days: 5
 
+            - name: Fail Job if Vulnerabilities Found
+              if: steps.trivy.outcome == 'failure'
+              run: |
+                  echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur le chart Helm."
+                  exit 1
+
     helm-scan-sarif:
         name: Trivy Helm Scan (SARIF)
         runs-on: ubuntu-latest
@@ -192,6 +216,12 @@ jobs:
                   severity: "CRITICAL,HIGH"
                   ignore-unfixed: true
 
+            - name: Vérifier le contenu du fichier SARIF
+              if: always()
+              run: |
+                  echo "Nombre de résultats dans le SARIF :"
+                  jq '[.runs[].results[]] | length' trivy-helm-results.sarif || echo "⚠️ Impossible de lire/parser le fichier SARIF"
+
             - name: Upload SARIF to GitHub Security tab
               if: always()
               uses: github/codeql-action/upload-sarif@v3
@@ -206,6 +236,12 @@ jobs:
                   name: trivy-helm-sarif
                   path: trivy-helm-results.sarif
                   retention-days: 5
+
+            - name: Fail Job if Vulnerabilities Found
+              if: steps.trivy.outcome == 'failure'
+              run: |
+                  echo "::error::Des vulnérabilités CRITICAL/HIGH ont été détectées sur le chart Helm."
+                  exit 1
 
     job-summary:
         name: Trivy Combined Job Summary
