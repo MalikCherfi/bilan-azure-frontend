@@ -19,10 +19,12 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Build Docker Image
+              env:
+                  API_KEY: "dummy-key-for-trivy-scan"
               run: |
                   docker build \
                     --build-arg API_BASE_URL="https://api.example.com" \
-                    --secret API_KEY="dummy-key-for-trivy-scan" \
+                    --secret id=API_KEY \
                     -t frontend-app:scan .
 
             - name: Save Docker Image
