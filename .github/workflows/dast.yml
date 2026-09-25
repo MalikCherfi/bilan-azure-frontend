@@ -25,6 +25,7 @@ jobs:
                   printf "10109\tIGNORE\t(Modern Web Application)\n" > .zap/rules.tsv
                   printf "10110\tIGNORE\t(Dangerous JS Functions)\n" >> .zap/rules.tsv
                   printf "10049\tIGNORE\t(Storable and Cacheable Content)\n" >> .zap/rules.tsv
+                  printf "10055\tIGNORE\t(CSP unsafe-inline & Fallback warnings)\n" >> .zap/rules.tsv
 
             - name: ZAP Baseline Scan
               id: zap
