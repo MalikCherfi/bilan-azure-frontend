@@ -73,7 +73,7 @@ jobs:
                   elif [ -z "$ZAP_STATUS" ]; then
                       echo "| ⚡ **OWASP ZAP** | ⏭️ SKIPPED | Job non exécuté |" >> $GITHUB_STEP_SUMMARY
                   else
-                      echo "| ⚡ **OWASP ZAP** | ❌ FAILED | Alertes détectées ([Consulter les issues GitHub]($ISSUES_URL)) \vert{}" >> $GITHUB_STEP_SUMMARY
+                      echo "| ⚡ **OWASP ZAP** | ❌ FAILED | Alertes détectées ([Consulter les issues GitHub]($ISSUES_URL)) |" >> $GITHUB_STEP_SUMMARY
                   fi
 
                   if [ "$NUCLEI_STATUS" == "success" ]; then
@@ -81,5 +81,5 @@ jobs:
                   elif [ -z "$NUCLEI_STATUS" ]; then
                       echo "| 🎯 **Nuclei** | ⏭️ SKIPPED | Job non exécuté |" >> $GITHUB_STEP_SUMMARY
                   else
-                      echo "| 🎯 **Nuclei** | ❌ FAILED | Vulnérabilités détectées ([Consulter les issues GitHub]($ISSUES_URL)) \vert{}" >> $GITHUB_STEP_SUMMARY
+                      echo "| 🎯 **Nuclei** | ❌ FAILED | Vulnérabilités détectées ([Consulter les issues GitHub]($ISSUES_URL)) |" >> $GITHUB_STEP_SUMMARY
                   fi
