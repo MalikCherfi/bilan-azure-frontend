@@ -89,8 +89,10 @@ jobs:
 
             - name: Resolve Tag
               id: get-tag
+              env:
+                  IMAGE_TAG: ${{ inputs.image_tag }}
               run: |
-                  TAG="${{ inputs.image_tag }}"
+                  TAG="$IMAGE_TAG"
                   if [ -z "$TAG" ]; then
                     TAG="${{ github.sha }}"
                   fi
