@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, azure, front]
 
     steps:
       - uses: actions/checkout@v6
@@ -33,7 +33,7 @@ jobs:
         run: npm run lint
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, azure, front]
 
     steps:
       - uses: actions/checkout@v6
@@ -55,7 +55,7 @@ jobs:
         run: npm test
 
   test-matrix:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, azure, front]
     strategy:
       matrix:
         node-version: ["22", "24", "26"]
