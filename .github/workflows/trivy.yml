@@ -13,7 +13,7 @@ permissions:
 jobs:
     build-image:
         name: Build Docker Image
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
     docker-scan-table:
         name: Trivy Docker Scan (Table)
         needs: build-image
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         outputs:
             vulnerable: ${{ steps.trivy.outcome == 'failure' }}
         steps:
@@ -80,7 +80,7 @@ jobs:
     docker-scan-sarif:
         name: Trivy Docker Scan (SARIF)
         needs: build-image
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         outputs:
             vulnerable: ${{ steps.trivy.outcome == 'failure' }}
         steps:
@@ -132,7 +132,7 @@ jobs:
 
     helm-scan-table:
         name: Trivy Helm Scan (Table)
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         outputs:
             vulnerable: ${{ steps.trivy.outcome == 'failure' }}
         steps:
@@ -181,7 +181,7 @@ jobs:
 
     helm-scan-sarif:
         name: Trivy Helm Scan (SARIF)
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         outputs:
             vulnerable: ${{ steps.trivy.outcome == 'failure' }}
         steps:
@@ -246,7 +246,7 @@ jobs:
                 helm-scan-sarif,
             ]
         if: always()
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         steps:
             - name: Vérifier qu'aucune vulnérabilité CRITICAL/HIGH n'a été détectée
               run: |
@@ -269,7 +269,7 @@ jobs:
                 helm-scan-sarif,
             ]
         if: always()
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         steps:
             - name: Download Docker table report
               uses: actions/download-artifact@v4
