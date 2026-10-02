@@ -9,7 +9,7 @@ on:
 jobs:
     analyze:
         name: CodeQL Analyze
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         permissions:
             security-events: write
             contents: read
