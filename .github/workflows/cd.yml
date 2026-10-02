@@ -21,7 +21,7 @@ jobs:
         permissions:
             contents: read
             id-token: write
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         outputs:
             acr_name: ${{ steps.get-acr.outputs.acr_name }}
         steps:
@@ -74,7 +74,7 @@ jobs:
             actions: read
             contents: read
             id-token: write
-        runs-on: ubuntu-latest
+        runs-on: [self-hosted, azure, front]
         needs: [buildImage]
         if: ${{ !cancelled() && !failure() }}
         steps:
