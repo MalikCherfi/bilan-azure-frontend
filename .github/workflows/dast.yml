@@ -8,7 +8,7 @@ permissions: {}
 
 jobs:
     zap-scan:
-        runs-on: ubuntu-24.04
+        runs-on: [self-hosted, azure, front]
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         permissions:
             contents: read
@@ -38,7 +38,7 @@ jobs:
                   fail_action: true
 
     nuclei-scan:
-        runs-on: ubuntu-24.04
+        runs-on: [self-hosted, azure, front]
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         permissions:
             contents: read
@@ -58,7 +58,7 @@ jobs:
         name: DAST Combined Job Summary
         needs: [zap-scan, nuclei-scan]
         if: always()
-        runs-on: ubuntu-24.04
+        runs-on: [self-hosted, azure, front]
         steps:
             - name: Generate DAST Job Summary
               run: |
